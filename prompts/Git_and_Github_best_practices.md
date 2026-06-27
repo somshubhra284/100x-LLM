@@ -1,55 +1,106 @@
-Let's look at some best practices for using Git and GitHub we follow at BigBinary. This will make our workflow consistent and efficient.
+# Git and GitHub Workflow — Instructions for Claude Code
 
-Linking Tasks to GitHub Issues
-Every task you work on must have a corresponding GitHub issue. Create issues in the future tense. For example, if you're working on a test case called Login to the application, raise a GitHub issue titled "Add Playwright tests to verify logging in to the application".
+These are the Git and GitHub rules (based on BigBinary's conventions) you MUST follow for every task in this repository. Follow the workflow in order. Do not skip steps. When a step requires a manual action in the GitHub UI that you cannot perform, stop and tell me explicitly.
 
-Branch Naming Convention
-Branches should be named in the future tense and follow this format:<issue_number>-a-short-hyphenized-description-of-the-issue.
+---
 
-For example: 2-add-tests-to-verify-login
+## Workflow (follow in this order)
 
-Atomic Commits
-Make small, logical commits. Do not commit all changes for an issue in a single commit. Instead, break down the feature into smaller parts and commit after each part is completed.
+### 1. Create a GitHub issue for the task
+- Every task MUST have a corresponding GitHub issue. If one does not exist, create it before writing any code.
+- Title the issue in the **future tense**, describing what will be done.
+- Command:
+  ```bash
+  gh issue create --title "Add Playwright tests to verify logging in to the application" --body "<short description of the task>"
+  ```
+- Note the issue number returned (e.g. `#2`) — you will use it for the branch name and PR.
 
-Meaningful Commit Messages
-Add logical commit messages. You should NOT add commit messages like Completed first part or Fixed review suggestion.
+### 2. Create a branch from up-to-date main
+- Branch name format: `<issue_number>-a-short-hyphenized-description`, in the **future tense**.
+- Example: `2-add-tests-to-verify-login`
+- Commands:
+  ```bash
+  git checkout main
+  git pull
+  git checkout -b 2-add-tests-to-verify-login
+  ```
 
-Instead, you should add meaningful messages such as Added beforeEach block for login tests or Fixed redundant awaits in the code.
+### 3. Make atomic commits as you work
+- Break the task into small logical parts. Commit after completing each part.
+- NEVER bundle all changes for an issue into a single commit.
+- Commit messages MUST be:
+  - In the **past tense** (they describe completed work).
+  - Specific and meaningful.
+- Good: `Added beforeEach block for login tests`, `Fixed redundant awaits in the code`
+- Bad: `Completed first part`, `Fixed review suggestion`, `WIP`
+  ```bash
+  git add <specific-files>
+  git commit -m "Added beforeEach block for login tests"
+  ```
 
-PR Description Format
-When raising a pull request (PR), the first line of the description should be:
+### 4. Push frequently and open a draft PR early
+- After the **first** commit, push and open a **draft** PR immediately. Keep pushing commits to it as you progress.
+- The first line of the PR description MUST be `Closes #<issue-number>`.
+- The PR title MUST be in the **past tense** and summarize the whole feature (e.g. `Added tests for login`).
+- Commands:
+  ```bash
+  git push -u origin 2-add-tests-to-verify-login
+  gh pr create --draft --title "Added tests for login" --body "Closes #2"
+  ```
+- Keep pushing as you go:
+  ```bash
+  git push
+  ```
+- Note: If a draft PR cannot be created (e.g. personal repo restrictions), create a regular PR with `gh pr create` (omit `--draft`) and tell me.
 
-- Closes #<issue-number>
-For example, if the issue number is 1, the PR description should start with:
+### 5. Mark ready and assign the reviewer ONLY when complete
+- Do NOT assign a reviewer until the work is fully complete and functional. Assigning early spams the reviewer.
+- When ready, mark the PR ready for review and **assign** the reviewer (adding them as a reviewer alone does not notify them of updates — they must be assigned).
+- Commands:
+  ```bash
+  gh pr ready
+  gh pr edit --add-assignee <reviewer-username> --add-reviewer <reviewer-username>
+  ```
+- If you do not know the reviewer's username, ask me before assigning.
 
-- Closes #1
-Past Tense for Commit Messages
-Commit messages should be in the past tense because they describe work already completed. For example:
+### 6. Respond to review comments
+- When changes are requested, the PR is assigned back to you.
+- Address review comments BEFORE starting any new feature.
+- After pushing the fixes:
+  1. Re-assign the PR back to the reviewer.
+  2. Post a comment stating the review comments have been fixed.
+  ```bash
+  git push
+  gh pr edit --add-assignee <reviewer-username>
+  gh pr comment --body "Fixed the review comments."
+  ```
 
-Added tests to verify logging into the application
-Fixed tests failing due to page closing unexpectedly.
-Past Tense for PR Titles
-PR titles should also be in the past tense, summarizing the work done in the PR. While commit messages focus on individual changes, the PR title summarizes the entire feature. Example PR titles:
+### 7. Merge only after approval
+- A PR may be merged ONLY after the reviewer has fully approved it. Never merge an unapproved PR.
 
-Added tests for login
-Added tests to verify tasks assigned to the same user
-Frequent Pushes and Draft PRs
-Push your commits to GitHub frequently. Once the first commit is made, create a draft PR and continue pushing commits to it. This ensures your code is safe and also lets the reviewers know about your progress in an issue.
+---
 
-Note: If you cannot create a draft PR in your personal GitHub repository, it's okay to raise a regular PR.
+## Hard rules checklist (must always hold true)
 
-Assign PRs for Review Only When Ready
-Do not assign a PR to a reviewer until it is fully ready for review. Assigning too early can overwhelm the reviewer with notifications. Assign it only when the work is complete and fully functional.
+- [ ] Every task has a GitHub issue, titled in the **future tense**.
+- [ ] Branch name is `<issue_number>-short-hyphenized-description`, in the **future tense**.
+- [ ] Commits are **atomic** — one logical change each, never one big commit.
+- [ ] Commit messages are in the **past tense**, specific, and meaningful.
+- [ ] PR description's first line is `Closes #<issue-number>`.
+- [ ] PR title is in the **past tense** and summarizes the whole feature.
+- [ ] A draft PR is opened after the first commit; commits are pushed frequently.
+- [ ] Reviewer is assigned ONLY when the PR is fully ready.
+- [ ] Reviewer is **assigned** (not just added as reviewer) so they get notified.
+- [ ] Review comments are addressed before new features; PR re-assigned to reviewer with a comment.
+- [ ] PR is merged ONLY after full approval.
 
-Assign the PR to the Reviewer
-When the PR is ready for review, make sure to assign it to the reviewer. Simply adding them as a reviewer does not subscribe them to updates. Assigning them ensures they receive notifications about new events on the PR.
+---
 
-github-assigned.png
-Prioritize Review Comments
-Address review comments before starting new features. This ensures your PR gets approved and merged faster.
+## Tense quick-reference
 
-Merge Only After Approval
-A PR should only be merged once it has been fully approved by the reviewer.
-
-Responding to Review Comments
-When you get review comments, the PR will be assigned back to you. Once the requested changes are completed and pushed assign the PR back to the reviewer and post a comment saying you have fixed the review comments.
+| Item            | Tense   | Example                                            |
+|-----------------|---------|----------------------------------------------------|
+| Issue title     | Future  | `Add Playwright tests to verify logging in`        |
+| Branch name     | Future  | `2-add-tests-to-verify-login`                      |
+| Commit message  | Past    | `Added tests to verify logging into the application` |
+| PR title        | Past    | `Added tests for login`                            |
